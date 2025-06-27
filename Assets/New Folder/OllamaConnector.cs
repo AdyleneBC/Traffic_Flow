@@ -32,13 +32,13 @@ public class OllamaConnector : MonoBehaviour
             sendButton.onClick.AddListener(EnviarComandoAOllama);
         }
 
-        // Buscar CubeManager si no está asignado
+        
         if (cubeManager == null)
         {
             cubeManager = FindObjectOfType<CubeManager>();
         }
 
-        // Buscar CaminoAbridor y CaminoCerrador si no están asignados
+        
         if (caminoAbridor == null)
         {
             caminoAbridor = FindObjectOfType<CaminoAbridor>();
@@ -57,10 +57,10 @@ public class OllamaConnector : MonoBehaviour
             return;
         }
 
-        // Asignar referencias a los controladores de caminos
+        
         AsignarReferenciasACaminoControladores();
 
-        // Obtener información del cubo inicial
+        
         string cuboInicial = "ninguno";
         if (cubeManager != null && cubeManager.cubos != null && cubeManager.cubos.Count > 0)
         {
@@ -102,10 +102,10 @@ public class OllamaConnector : MonoBehaviour
 
     private IEnumerator ProcesarComandoConOllama(string comandoUsuario)
     {
-        // Crear el prompt para Mistral
+        
         string prompt = CrearPromptCompleto(comandoUsuario);
 
-        // Crear el payload JSON para Ollama
+       
         var requestData = new OllamaRequest
         {
             model = modelName,
@@ -116,7 +116,7 @@ public class OllamaConnector : MonoBehaviour
         string jsonPayload = JsonUtility.ToJson(requestData);
         byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonPayload);
 
-        // Crear la petición HTTP
+        
         using (UnityWebRequest request = new UnityWebRequest(ollamaUrl, "POST"))
         {
             request.uploadHandler = new UploadHandlerRaw(bodyRaw);
@@ -153,7 +153,7 @@ public class OllamaConnector : MonoBehaviour
             }
         }
 
-        // Limpiar el campo de entrada
+        
         commandInputField.text = "";
     }
 
@@ -163,9 +163,9 @@ public class OllamaConnector : MonoBehaviour
             string.Join(", ", cubeManager.cubos.Select(c => c.name)) : "N/A";
 
         string cuboActual = cubeManager != null && cubeManager.cubos != null && cubeManager.cubos.Count > 0 ?
-            cubeManager.cubos[0].name : "ninguno"; // Simplificado, el CubeManager maneja el activo
+            cubeManager.cubos[0].name : "ninguno"; 
 
-        // Obtener nodos disponibles desde CaminoAbridor si existe
+        
         string nombresNodos = "N/A";
         if (caminoAbridor != null && caminoAbridor.nodos != null && caminoAbridor.nodos.Count > 0)
         {
@@ -227,22 +227,22 @@ Responde SOLAMENTE con el comando exacto:";
 
     private string ExtraerComandoDeRespuesta(string respuesta)
     {
-        // Limpiar la respuesta
+        
         string comando = respuesta.Trim().ToLower();
 
-        // Verificar si es un comando combinado (contiene ';')
+        
         if (comando.Contains(";"))
         {
-            return comando; // Devolver el comando combinado tal como está
+            return comando; 
         }
 
-        // PRIORIDAD 1: Comandos de navegación inteligente
+        
         if (comando.Contains("ir_a_"))
         {
             return ExtraerComandoNavegacion(comando);
         }
 
-        // PRIORIDAD 2: Comandos de caminos
+        
         else if (comando.Contains("abrir_camino_"))
         {
             return ExtraerComandoCamino(comando, "abrir_camino_");
@@ -252,7 +252,7 @@ Responde SOLAMENTE con el comando exacto:";
             return ExtraerComandoCamino(comando, "cerrar_camino_");
         }
 
-        // PRIORIDAD 3: Comandos exactos de movimiento
+        
         else if (comando == "adelante")
             return "adelante";
         else if (comando == "atras" || comando == "atrás")
@@ -265,7 +265,7 @@ Responde SOLAMENTE con el comando exacto:";
             return "cambiar";
 
 
-        // PRIORIDAD 4: Comandos con palabras adicionales - CON VERIFICACIÓN DE DIRECCIÓN
+        
         else if ((comando.Contains("adelante") || comando.Contains("avanzar") || comando.Contains("forward"))
                  && !comando.Contains("derecha") && !comando.Contains("izquierda") && !comando.Contains("atras") && !comando.Contains("atrás"))
             return "adelante";
@@ -287,7 +287,7 @@ Responde SOLAMENTE con el comando exacto:";
         {
             string nodoDestino = comando.Substring(index + 5).Trim(); // 5 = longitud de "ir_a_"
 
-            // Limpiar caracteres no deseados
+            
             nodoDestino = nodoDestino.Replace("_", "").Replace("-", "").Replace(" ", "");
 
             return $"ir_a_{nodoDestino}";
@@ -302,7 +302,7 @@ Responde SOLAMENTE con el comando exacto:";
         {
             string parametros = comando.Substring(index + prefijo.Length).Trim();
 
-            // Separar los dos nodos
+            
             string[] partes = parametros.Split('_');
             if (partes.Length >= 2)
             {
@@ -322,14 +322,14 @@ Responde SOLAMENTE con el comando exacto:";
             return;
         }
 
-        // Verificar si es un comando combinado
+        
         if (comando.Contains(";"))
         {
             EjecutarComandoCombinado(comando);
             return;
         }
 
-        // Ejecutar comando simple
+        
         EjecutarComandoSimple(comando);
     }
 
@@ -351,7 +351,7 @@ Responde SOLAMENTE con el comando exacto:";
 
             EjecutarComandoSimple(comando);
 
-            // Pausa entre comandos para que se procesen correctamente
+            
             yield return new WaitForSeconds(0.5f);
         }
 
@@ -360,14 +360,14 @@ Responde SOLAMENTE con el comando exacto:";
 
     private void EjecutarComandoSimple(string comando)
     {
-        // NUEVO: Comandos de navegación inteligente
+        
         if (comando.StartsWith("ir_a_"))
         {
             EjecutarComandoNavegacion(comando);
             return;
         }
 
-        // Comandos de control de caminos usando las clases existentes
+        
         else if (comando.StartsWith("abrir_camino_"))
         {
             EjecutarComandoCamino(comando, true);
@@ -379,7 +379,7 @@ Responde SOLAMENTE con el comando exacto:";
             return;
         }
 
-        // Comando de cambio de cubo usando CubeManager
+        
         else if (comando == "cambiar")
         {
             if (cubeManager != null)
@@ -394,13 +394,13 @@ Responde SOLAMENTE con el comando exacto:";
             return;
         }
 
-        // Comandos de movimiento usando CubeManager -> CubeMover
+        
         if (cubeManager != null)
         {
-            // Simular entrada de texto para usar la lógica existente
+            
             string textoOriginal = commandInputField.text;
 
-            // Mapear comandos de IA a comandos de movimiento
+            
             string comandoMovimiento = "";
             switch (comando)
             {
@@ -421,19 +421,19 @@ Responde SOLAMENTE con el comando exacto:";
                     return;
             }
 
-            // Establecer el comando en el campo de entrada
+            
             commandInputField.text = comandoMovimiento;
 
-            // Ejecutar usando CubeManager (que usa CubeMover)
+            
             cubeManager.EnviarComando();
 
-            // Agregar mensaje de confirmación
+            
             if (statusText != null && !statusText.text.Contains("no permitido"))
             {
                 statusText.text += " (Comando procesado por Mistral)";
             }
 
-            // Restaurar texto original
+           
             commandInputField.text = textoOriginal;
         }
         else
@@ -444,7 +444,7 @@ Responde SOLAMENTE con el comando exacto:";
 
     private void EjecutarComandoNavegacion(string comando)
     {
-        string nodoDestino = comando.Substring(5); // Quitar "ir_a_"
+        string nodoDestino = comando.Substring(5); 
 
         if (cubeManager == null || cubeManager.cubos == null || cubeManager.cubos.Count == 0)
         {
@@ -452,7 +452,7 @@ Responde SOLAMENTE con el comando exacto:";
             return;
         }
 
-        // Obtener el cubo activo actual
+        
         CubeMover cuboActivo = ObtenerCuboActivo();
         if (cuboActivo == null)
         {
@@ -466,7 +466,7 @@ Responde SOLAMENTE con el comando exacto:";
             return;
         }
 
-        // Buscar el nodo destino
+        
         Nodo[] todosLosNodos = FindObjectsOfType<Nodo>();
         Nodo nodoObjetivo = todosLosNodos.FirstOrDefault(n =>
             n.id != null && n.id.Equals(nodoDestino, System.StringComparison.OrdinalIgnoreCase));
@@ -483,7 +483,7 @@ Responde SOLAMENTE con el comando exacto:";
             return;
         }
 
-        // Calcular la ruta usando Dijkstra
+        
         List<Nodo> ruta = CalcularRutaDijkstra(cuboActivo.nodoActual, nodoObjetivo);
 
         if (ruta == null || ruta.Count == 0)
@@ -494,7 +494,7 @@ Responde SOLAMENTE con el comando exacto:";
 
         MostrarEstado($"Navegando hacia {nodoDestino}...");
 
-        // Iniciar el movimiento usando el CubeMover
+        
         StartCoroutine(MoverCuboEnRuta(cuboActivo, ruta));
     }
 
@@ -515,7 +515,7 @@ Responde SOLAMENTE con el comando exacto:";
         var prev = new Dictionary<Nodo, Nodo>();
         var nodosNoVisitados = new List<Nodo>();
 
-        // Inicializar estructuras
+        
         foreach (var nodo in todosNodos)
         {
             dist[nodo] = float.PositiveInfinity;
@@ -525,18 +525,18 @@ Responde SOLAMENTE con el comando exacto:";
 
         dist[origen] = 0f;
 
-        // Algoritmo de Dijkstra
+        
         while (nodosNoVisitados.Count > 0)
         {
-            // Nodo con menor distancia estimada
+            
             Nodo nodoActual = nodosNoVisitados.OrderBy(n => dist[n]).First();
             nodosNoVisitados.Remove(nodoActual);
 
-            // Si llegamos al destino, terminamos
+            
             if (nodoActual == destino)
                 break;
 
-            // Verificar que el camino no esté cerrado
+            
             foreach (var camino in nodoActual.conexiones)
             {
                 if (camino == null || camino.destino == null || camino.cerrado)
@@ -544,7 +544,7 @@ Responde SOLAMENTE con el comando exacto:";
 
                 Nodo vecino = camino.destino;
 
-                // Si el vecino no está en la lista, sáltalo
+                
                 if (!dist.ContainsKey(vecino)) continue;
 
                 float nuevaDistancia = dist[nodoActual] + camino.peso;
@@ -557,22 +557,22 @@ Responde SOLAMENTE con el comando exacto:";
             }
         }
 
-        // Reconstrucción del camino
+        
         List<Nodo> ruta = new List<Nodo>();
         Nodo actual = destino;
 
-        // Retroceder desde destino hasta origen
+        
         while (actual != null)
         {
             ruta.Insert(0, actual);
             actual = prev[actual];
         }
 
-        // Validar que la ruta encontrada lleva realmente al destino
+       
         if (ruta.Count == 0 || ruta[0] != origen)
             return null;
 
-        // Verificar que toda la ruta esté disponible (sin caminos cerrados)
+        
         for (int i = 0; i < ruta.Count - 1; i++)
         {
             Nodo nodoOrigen = ruta[i];
@@ -600,12 +600,12 @@ Responde SOLAMENTE con el comando exacto:";
 
     private IEnumerator MoverCuboEnRuta(CubeMover cubo, List<Nodo> ruta)
     {
-        for (int i = 1; i < ruta.Count; i++) // Empezar desde 1 para saltar el nodo actual
+        for (int i = 1; i < ruta.Count; i++) 
         {
             Nodo siguienteNodo = ruta[i];
             Nodo nodoAnterior = ruta[i - 1];
 
-            // Verificar antes de cada movimiento que el camino sigue abierto
+            
             bool caminoAbierto = false;
             foreach (var camino in nodoAnterior.conexiones)
             {
@@ -648,12 +648,12 @@ Responde SOLAMENTE con el comando exacto:";
         string id1 = partes[0].Trim();
         string id2 = partes[1].Trim();
 
-        // Formar el comando como lo esperan las clases CaminoAbridor/CaminoCerrador
+        
         string comandoCamino = $"{id1} {id2}";
 
         if (abrir && caminoAbridor != null)
         {
-            // Usar la clase CaminoAbridor existente
+            
             string textoOriginal = commandInputField.text;
             commandInputField.text = comandoCamino;
 
@@ -663,7 +663,7 @@ Responde SOLAMENTE con el comando exacto:";
         }
         else if (!abrir && caminoCerrador != null)
         {
-            // Usar la clase CaminoCerrador existente
+            
             string textoOriginal = commandInputField.text;
             commandInputField.text = comandoCamino;
 
@@ -685,13 +685,13 @@ Responde SOLAMENTE con el comando exacto:";
             statusText.text = mensaje;
     }
 
-    // Método público para obtener información del estado actual
+    
     public string ObtenerEstadoActual()
     {
         if (cubeManager == null || cubeManager.cubos == null || cubeManager.cubos.Count == 0)
             return "No hay cubos disponibles";
 
-        // Obtener información del cubo activo desde CubeManager
+       
         return "Sistema de IA activo y conectado";
     }
 }
