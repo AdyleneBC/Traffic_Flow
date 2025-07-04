@@ -7,6 +7,7 @@ using System.Text;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+//HOLA LOS ODIO :)
 public class OllamaConnector : MonoBehaviour
 {
     [Header("UI Referencias")]
