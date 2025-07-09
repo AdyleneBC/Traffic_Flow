@@ -1,4 +1,4 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 using TMPro;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,8 +19,8 @@ public class CubeMover : MonoBehaviour
         {
             Debug.LogError("Nodo actual no asignado.");
         }
-// Inicia el tr·fico autom·tico
-        StartCoroutine(SimularTrafico());
+// Inicia el tr√°fico autom√°tico
+        StartCoroutine(SimularTraficoFluido());
     }
 
     public void ProcessCommand()
@@ -55,7 +55,7 @@ public class CubeMover : MonoBehaviour
 
             if (objetivo == nodoActual)
             {
-                MostrarEstado("°Ya est·s en ese nodo!");
+                MostrarEstado("¬°Ya est√°s en ese nodo!");
                 return;
             }
 
@@ -63,7 +63,7 @@ public class CubeMover : MonoBehaviour
 
             if (ruta == null || ruta.Count == 0)
             {
-                MostrarEstado("No se encontrÛ una ruta al nodo destino.");
+                MostrarEstado("No se encontr√≥ una ruta al nodo destino.");
                 return;
             }
 
@@ -80,7 +80,7 @@ public class CubeMover : MonoBehaviour
             case "izquierda": direction = Vector3.left; break;
             case "derecha": direction = Vector3.right; break;
             default:
-                MostrarEstado($"Comando inv·lido: {command}");
+                MostrarEstado($"Comando inv√°lido: {command}");
                 return;
         }
 
@@ -89,7 +89,7 @@ public class CubeMover : MonoBehaviour
 
         if (siguienteNodo == null)
         {
-            MostrarEstado("°Movimiento no permitido! No hay camino abierto en esa direcciÛn.");
+            MostrarEstado("¬°Movimiento no permitido! No hay camino abierto en esa direcci√≥n.");
             return;
         }
 
@@ -131,7 +131,7 @@ public class CubeMover : MonoBehaviour
             if (nodoActual == destino)
                 break;
 
-            // CORREGIDO: Verificar que el camino no estÈ cerrado
+            // CORREGIDO: Verificar que el camino no est√© cerrado
             foreach (var camino in nodoActual.conexiones)
             {
                 if (camino == null || camino.destino == null || camino.cerrado)
@@ -139,7 +139,7 @@ public class CubeMover : MonoBehaviour
 
                 Nodo vecino = camino.destino;
 
-                // Si el vecino no est· en la lista, s·ltalo
+                // Si el vecino no est√° en la lista, s√°ltalo
                 if (!dist.ContainsKey(vecino)) continue;
 
                 float nuevaDistancia = dist[nodoActual] + camino.peso;
@@ -152,7 +152,7 @@ public class CubeMover : MonoBehaviour
             }
         }
 
-        // ReconstrucciÛn del camino
+        // Reconstrucci√≥n del camino
         List<Nodo> ruta = new List<Nodo>();
         Nodo actual = destino;
 
@@ -167,7 +167,7 @@ public class CubeMover : MonoBehaviour
         if (ruta.Count == 0 || ruta[0] != origen)
             return null;
 
-        // CORREGIDO: Verificar que toda la ruta estÈ disponible (sin caminos cerrados)
+        // CORREGIDO: Verificar que toda la ruta est√© disponible (sin caminos cerrados)
         for (int i = 0; i < ruta.Count - 1; i++)
         {
             Nodo nodoOrigen = ruta[i];
@@ -185,7 +185,7 @@ public class CubeMover : MonoBehaviour
 
             if (!caminoDisponible)
             {
-                MostrarEstado($"El camino desde {nodoOrigen.id} hacia {nodoDestino.id} est· cerrado.");
+                MostrarEstado($"El camino desde {nodoOrigen.id} hacia {nodoDestino.id} est√° cerrado.");
                 return null;
             }
         }
@@ -213,7 +213,7 @@ public class CubeMover : MonoBehaviour
 
             if (!caminoAbierto)
             {
-                MostrarEstado($"°El camino hacia {siguienteNodo.id} se cerrÛ durante el movimiento!");
+                MostrarEstado($"¬°El camino hacia {siguienteNodo.id} se cerr√≥ durante el movimiento!");
                 yield break;
             }
 
@@ -265,7 +265,7 @@ public class CubeMover : MonoBehaviour
         return ContienePalabrasEnOrden(texto, fraseInvertida);
     }
 
-    // MÈtodo auxiliar para mostrar estado
+    // M√©todo auxiliar para mostrar estado
     private void MostrarEstado(string mensaje)
     {
         Debug.Log(mensaje);
@@ -273,42 +273,88 @@ public class CubeMover : MonoBehaviour
             statusText.text = mensaje;
     }
 
-//Simulador de tr·fico aleatorio
-    IEnumerator SimularTrafico()
+    //Simulador de tr√°fico aleatorio
+    IEnumerator SimularTraficoFluido()
     {
-        yield return new WaitForSeconds(Random.Range(1f, 3f)); // espera inicial
+        // Espera inicial aleatoria para que no empiecen todos igual
+        yield return new WaitForSeconds(Random.Range(0.5f, 2.5f));
 
         while (true)
         {
-            // Obtener todos los nodos
-            var todosLosNodos = FindObjectsOfType<Nodo>();
-            if (todosLosNodos.Length == 0 || nodoActual == null) yield break;
+            if (nodoActual == null) yield break;
 
-            // Elegir un nodo destino aleatorio diferente al actual
-            Nodo nodoDestino = null;
+            // Obtener nodos disponibles
+            var todos = FindObjectsOfType<Nodo>();
+            if (todos.Length <= 1) yield break;
+
+            // Escoger un destino diferente al actual
+            Nodo destino = null;
+            int maxIntentos = 10;
             int intentos = 0;
 
-            while (nodoDestino == null || nodoDestino == nodoActual)
+            while ((destino == null || destino == nodoActual) && intentos < maxIntentos)
             {
-                nodoDestino = todosLosNodos[Random.Range(0, todosLosNodos.Length)];
-                if (++intentos > 10) yield break;
+                destino = todos[Random.Range(0, todos.Length)];
+                intentos++;
             }
 
-            // Calcular ruta
-            List<Nodo> ruta = CalcularRutaDijkstra(nodoActual, nodoDestino);
-            if (ruta != null && ruta.Count > 1)
+            if (destino == null || destino == nodoActual)
             {
-                MostrarEstado($"[Auto] Moviendo hacia {nodoDestino.id}...");
-                yield return StartCoroutine(MoverRuta(ruta));
-            }
-            else
-            {
-                MostrarEstado("[Auto] No se pudo encontrar ruta.");
+                yield return new WaitForSeconds(1f); // espera y reintenta
+                continue;
             }
 
-            // Esperar antes de elegir otro destino
-            yield return new WaitForSeconds(Random.Range(2f, 5f));
+            List<Nodo> ruta = CalcularRutaDijkstra(nodoActual, destino);
+
+            if (ruta == null || ruta.Count < 2)
+            {
+                MostrarEstado($"[Tr√°fico] Ruta inv√°lida o bloqueada a {destino.id}");
+                yield return new WaitForSeconds(1f);
+                continue;
+            }
+
+            // Mover en la ruta
+            yield return StartCoroutine(MoverRutaFluida(ruta));
+
+            // Peque√±a pausa antes de buscar nuevo destino
+            yield return new WaitForSeconds(Random.Range(0.5f, 2f));
         }
     }
+    // Trafico fluido
+    IEnumerator MoverRutaFluida(List<Nodo> ruta)
+    {
+        for (int i = 1; i < ruta.Count; i++)
+        {
+            Nodo destino = ruta[i];
+            Nodo origen = ruta[i - 1];
+
+            // Verifica que el camino est√© abierto
+            bool caminoAbierto = origen.conexiones.Exists(c => c.destino == destino && !c.cerrado);
+            if (!caminoAbierto)
+            {
+                MostrarEstado($"[Tr√°fico] Camino cerrado hacia {destino.id}. Recalculando...");
+                yield break;
+            }
+
+            MostrarEstado($"[Tr√°fico] ‚Üí {destino.id}");
+
+            Vector3 inicio = transform.position;
+            Vector3 fin = destino.transform.position;
+            float t = 0;
+            float duracion = Vector3.Distance(inicio, fin) / moveSpeed;
+
+            while (t < 1f)
+            {
+                t += Time.deltaTime / duracion;
+                transform.position = Vector3.Lerp(inicio, fin, t);
+                yield return null;
+            }
+
+            nodoActual = destino;
+        }
+
+        MostrarEstado($"[Tr√°fico] Llegaste a {nodoActual.id}");
+    }
+
 
 }
