@@ -7,9 +7,11 @@ using System.Text;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-//HOLA LOS ODIO :)
 public class OllamaConnector : MonoBehaviour
 {
+//Línea de prompt
+    private string systemPrompt = null;
+
     [Header("UI Referencias")]
     public TMP_InputField commandInputField;
     public TextMeshProUGUI statusText;
@@ -70,6 +72,19 @@ public class OllamaConnector : MonoBehaviour
 
         if (statusText != null)
             statusText.text = $"Cubo inicial: {cuboInicial}";
+
+// Cargar system prompt desde archivo
+        string promptPath = Application.dataPath + "/Prompt/system_prompt.txt";
+        if (System.IO.File.Exists(promptPath))
+        {
+            systemPrompt = System.IO.File.ReadAllText(promptPath);
+        }
+        else
+        {
+            Debug.LogError("No se encontró el archivo system_prompt.txt");
+            systemPrompt = "";
+        }
+
     }
 
     private void AsignarReferenciasACaminoControladores()
@@ -158,73 +173,20 @@ public class OllamaConnector : MonoBehaviour
         commandInputField.text = "";
     }
 
+//Se reemplazó el prompt por el optimizado
     private string CrearPromptCompleto(string comandoUsuario)
     {
-        string nombresCubos = cubeManager != null && cubeManager.cubos != null ?
-            string.Join(", ", cubeManager.cubos.Select(c => c.name)) : "N/A";
-
-        string cuboActual = cubeManager != null && cubeManager.cubos != null && cubeManager.cubos.Count > 0 ?
-            cubeManager.cubos[0].name : "ninguno"; 
-
-        
-        string nombresNodos = "N/A";
+        string resumenNodos = "N/A";
         if (caminoAbridor != null && caminoAbridor.nodos != null && caminoAbridor.nodos.Count > 0)
         {
-            nombresNodos = string.Join(", ", caminoAbridor.nodos.Select(n => n.id));
+            resumenNodos = string.Join(", ", caminoAbridor.nodos.Select(n => n.id));
         }
 
-        return $@"Eres un asistente que convierte comandos en lenguaje natural a comandos específicos.
+        string contexto = $"Comando usuario: \"{comandoUsuario}\"\nNodos disponibles: {resumenNodos}";
 
-Los comandos válidos son:
-
-MOVIMIENTO BÁSICO:
-- adelante (para: adelante, avanzar, mover adelante, ir adelante, una cuadra adelante, etc.)
-- atras (para: atrás, retroceder, mover atrás, ir atrás, etc.)
-- derecha (para: derecha, girar derecha, mover derecha, ir derecha, etc.)
-- izquierda (para: izquierda, girar izquierda, mover izquierda, ir izquierda, etc.)
-
-NAVEGACIÓN INTELIGENTE:
-- ir_a_[nodo] (para: ir a [nodo], navegar a [nodo], mover a [nodo], dirigirse a [nodo], etc.)
-
-CAMBIO DE CUBO:
-- cambiar (para cambiar al siguiente cubo)
-
-CONTROL DE CAMINOS:
-- abrir_camino_[nodo1]_[nodo2] (para abrir un camino entre dos nodos)
-- cerrar_camino_[nodo1]_[nodo2] (para cerrar un camino entre dos nodos)
-
-COMANDOS COMBINADOS:
-- Si el comando tiene MÚLTIPLES acciones, responde con todas separadas por ' ; '
-- Ejemplo: 'cambiar ; ir_a_b2' o 'abrir_camino_a1_b2 ; ir_a_b2'
-
-INFORMACIÓN ACTUAL:
-- Cubos disponibles: {nombresCubos}
-- Nodos disponibles: {nombresNodos}
-
-Analiza el comando: '{comandoUsuario}'
-
-REGLAS:
-1. Comando simple de movimiento → responde: adelante, atras, derecha, izquierda
-2. Comando de navegación → responde: ir_a_[nodo]
-3. Comando simple de cambio → responde: cambiar
-4. Comando de abrir camino → responde: abrir_camino_[nodo1]_[nodo2]
-5. Comando de cerrar camino → responde: cerrar_camino_[nodo1]_[nodo2]
-6. Comando combinado → responde: [acción1] ; [acción2] ; [acción3]
-7. Si no es válido → responde: invalido
-
-EJEMPLOS:
-- 'avanzar' → 'adelante'
-- 'ir a b2' → 'ir_a_b2'
-- 'navegar hasta la salida' → 'ir_a_salida'
-- 'dirigirse a nodo1' → 'ir_a_nodo1'
-- 'cambiar cubo' → 'cambiar'
-- 'abre el camino entre nodo1 y nodo2' → 'abrir_camino_nodo1_nodo2'
-- 'cierra el paso de A a B' → 'cerrar_camino_A_B'
-- 'abre camino de entrada a salida y luego ve hacia salida' → 'abrir_camino_entrada_salida ; ir_a_salida'
-- 'cambia de cubo, abre camino A B y navega a B' → 'cambiar ; abrir_camino_A_B ; ir_a_B'
-
-Responde SOLAMENTE con el comando exacto:";
+        return $"{systemPrompt}\n\n{contexto}";
     }
+
 
     private string ExtraerComandoDeRespuesta(string respuesta)
     {
