@@ -19,6 +19,8 @@ public class CubeMover : MonoBehaviour
         {
             Debug.LogError("Nodo actual no asignado.");
         }
+// Inicia el tráfico automático
+        StartCoroutine(SimularTrafico());
     }
 
     public void ProcessCommand()
@@ -270,4 +272,43 @@ public class CubeMover : MonoBehaviour
         if (statusText != null)
             statusText.text = mensaje;
     }
+
+//Simulador de tráfico aleatorio
+    IEnumerator SimularTrafico()
+    {
+        yield return new WaitForSeconds(Random.Range(1f, 3f)); // espera inicial
+
+        while (true)
+        {
+            // Obtener todos los nodos
+            var todosLosNodos = FindObjectsOfType<Nodo>();
+            if (todosLosNodos.Length == 0 || nodoActual == null) yield break;
+
+            // Elegir un nodo destino aleatorio diferente al actual
+            Nodo nodoDestino = null;
+            int intentos = 0;
+
+            while (nodoDestino == null || nodoDestino == nodoActual)
+            {
+                nodoDestino = todosLosNodos[Random.Range(0, todosLosNodos.Length)];
+                if (++intentos > 10) yield break;
+            }
+
+            // Calcular ruta
+            List<Nodo> ruta = CalcularRutaDijkstra(nodoActual, nodoDestino);
+            if (ruta != null && ruta.Count > 1)
+            {
+                MostrarEstado($"[Auto] Moviendo hacia {nodoDestino.id}...");
+                yield return StartCoroutine(MoverRuta(ruta));
+            }
+            else
+            {
+                MostrarEstado("[Auto] No se pudo encontrar ruta.");
+            }
+
+            // Esperar antes de elegir otro destino
+            yield return new WaitForSeconds(Random.Range(2f, 5f));
+        }
+    }
+
 }
