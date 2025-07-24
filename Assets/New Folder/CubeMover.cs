@@ -32,7 +32,8 @@ public class CubeMover : MonoBehaviour
         if (Regex.IsMatch(command, @"^(ir a|mover a|caminar a|dirigirse a|arrastrar a|mover|caminar|dirigirse|voltear a|voltear|desplazar)", RegexOptions.IgnoreCase))
         {
             string objetivoId = null;
-            var todos = FindObjectsOfType<Nodo>();
+            var todos = FindObjectsByType<Nodo>(FindObjectsSortMode.None);
+
             Debug.Log("Nodos en escena:");
             foreach (var n in todos)
             {
@@ -99,7 +100,8 @@ public class CubeMover : MonoBehaviour
 
     List<Nodo> CalcularRutaDijkstra(Nodo origen, Nodo destino)
     {
-        List<Nodo> todosNodos = FindObjectsOfType<Nodo>().ToList();
+        List<Nodo> todosNodos = FindObjectsByType<Nodo>(FindObjectsSortMode.None).ToList();
+
 
         if (!todosNodos.Contains(origen)) todosNodos.Add(origen);
         if (!todosNodos.Contains(destino)) todosNodos.Add(destino);

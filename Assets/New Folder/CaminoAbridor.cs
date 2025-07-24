@@ -10,7 +10,8 @@ public class CaminoAbridor : MonoBehaviour
 
     private void Awake()
     {
-        nodos = new List<Nodo>(FindObjectsOfType<Nodo>());
+        nodos = new List<Nodo>(FindObjectsByType<Nodo>(FindObjectsSortMode.None));
+
     }
 
     public void AbrirCaminoDesdeTexto()

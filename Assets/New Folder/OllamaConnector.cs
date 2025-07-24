@@ -36,18 +36,19 @@ public class OllamaConnector : MonoBehaviour
         
         if (cubeManager == null)
         {
-            cubeManager = FindObjectOfType<CubeManager>();
+            cubeManager = FindAnyObjectByType<CubeManager>();
+
         }
 
-        
+
         if (caminoAbridor == null)
         {
-            caminoAbridor = FindObjectOfType<CaminoAbridor>();
+            caminoAbridor = FindAnyObjectByType<CaminoAbridor>();
         }
 
         if (caminoCerrador == null)
         {
-            caminoCerrador = FindObjectOfType<CaminoCerrador>();
+            caminoCerrador = FindAnyObjectByType<CaminoCerrador>();
         }
 
         if (cubeManager == null)
@@ -361,14 +362,11 @@ Responde SOLAMENTE con el comando exacto:";
 
     private void EjecutarComandoSimple(string comando)
     {
-        
         if (comando.StartsWith("ir_a_"))
         {
             EjecutarComandoNavegacion(comando);
             return;
         }
-
-        
         else if (comando.StartsWith("abrir_camino_"))
         {
             EjecutarComandoCamino(comando, true);
@@ -379,8 +377,6 @@ Responde SOLAMENTE con el comando exacto:";
             EjecutarComandoCamino(comando, false);
             return;
         }
-
-        
         else if (comando == "cambiar")
         {
             if (cubeManager != null)
@@ -395,14 +391,47 @@ Responde SOLAMENTE con el comando exacto:";
             return;
         }
 
-        
+        string[] add = { "agregar cubo", "añadir carro", "crear cubo", "añadir cubo" };
+        foreach (string addy in add)
+        {
+            if (comando.StartsWith(addy))
+            {
+                if (cubeManager != null)
+                {
+                    cubeManager.AgregarCubo();
+                    MostrarEstado("Cubo agregado correctamente.");
+                }
+                else
+                {
+                    MostrarEstado("Error: CubeManager no disponible para agregar cubos.");
+                }
+                return;
+            }
+        }
+
+        string[] del = { "eliminar cubo", "destruir carro", "destruir cubo", "borrar cubo", "borrar carro" };
+        foreach (string delly in del)
+        {
+            if (comando.StartsWith(delly))
+            {
+                if (cubeManager != null)
+                {
+                    cubeManager.EliminarCubo();
+                    MostrarEstado("Cubo eliminado correctamente.");
+                }
+                else
+                {
+                    MostrarEstado("Error: CubeManager no disponible para eliminar cubos.");
+                }
+                return;
+            }
+        }
+
         if (cubeManager != null)
         {
-            
             string textoOriginal = commandInputField.text;
-
-            
             string comandoMovimiento = "";
+
             switch (comando)
             {
                 case "adelante":
@@ -422,19 +451,14 @@ Responde SOLAMENTE con el comando exacto:";
                     return;
             }
 
-            
             commandInputField.text = comandoMovimiento;
-
-            
             cubeManager.EnviarComando();
 
-            
             if (statusText != null && !statusText.text.Contains("no permitido"))
             {
                 statusText.text += " (Comando procesado por Mistral)";
             }
 
-           
             commandInputField.text = textoOriginal;
         }
         else
@@ -442,6 +466,7 @@ Responde SOLAMENTE con el comando exacto:";
             MostrarEstado("Error: CubeManager no disponible");
         }
     }
+
 
     private void EjecutarComandoNavegacion(string comando)
     {
@@ -467,8 +492,9 @@ Responde SOLAMENTE con el comando exacto:";
             return;
         }
 
-        
-        Nodo[] todosLosNodos = FindObjectsOfType<Nodo>();
+
+        Nodo[] todosLosNodos = FindObjectsByType<Nodo>(FindObjectsSortMode.None);
+
         Nodo nodoObjetivo = todosLosNodos.FirstOrDefault(n =>
             n.id != null && n.id.Equals(nodoDestino, System.StringComparison.OrdinalIgnoreCase));
 
@@ -507,7 +533,8 @@ Responde SOLAMENTE con el comando exacto:";
 
     private List<Nodo> CalcularRutaDijkstra(Nodo origen, Nodo destino)
     {
-        List<Nodo> todosNodos = FindObjectsOfType<Nodo>().ToList();
+        List<Nodo> todosNodos = FindObjectsByType<Nodo>(FindObjectsSortMode.None).ToList();
+
 
         if (!todosNodos.Contains(origen)) todosNodos.Add(origen);
         if (!todosNodos.Contains(destino)) todosNodos.Add(destino);
